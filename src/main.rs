@@ -14,10 +14,12 @@ fn main() {
         let (canvas, events) = create_drawing_window_with_events("Tetris");
 
         let render_engine = tetris::render_engine::FloDrawRenderEngine::new(canvas);
-        let tetris: TetrisGame = tetris::Tetris::new(render_engine);
+        
 
         // Create a channel for sending input events to the game loop
         let (input_sender, input_receiver) = mpsc::channel();
+
+        let tetris: TetrisGame = tetris::Tetris::new(render_engine, input_receiver);
 
         // Spawn event handler thread
         thread::spawn(move || {
@@ -28,15 +30,15 @@ fn main() {
                 while let Some(event) = events.next().await {
                     match event {
                         DrawEvent::Closed => {
-                            let _ = input_sender.send(InputEvent::WindowClosed);
+                            let _ = input_sender.send(tetris::InputEvent::Quit);
                             break;
                         },
-                        DrawEvent::KeyUp(_, Some(key)) => {
-                            let _ = input_sender.send(InputEvent::KeyUp(key));
-                        },
-                        DrawEvent::KeyDown(_, Some(key)) => {
-                            let _ = input_sender.send(InputEvent::KeyDown(key));
-                        },
+                        // DrawEvent::KeyUp(_, Some(key)) => {
+                        //     let _ = input_sender.send(InputEvent::KeyUp(key));
+                        // },
+                        // DrawEvent::KeyDown(_, Some(key)) => {
+                        //     let _ = input_sender.send(InputEvent::KeyDown(key));
+                        // },
                         _ => {
                             // Handle other events as needed
                         }
@@ -46,18 +48,11 @@ fn main() {
         });
 
         // Run the game loop in the main thread
-        game_loop(tetris, input_receiver);
+        game_loop(tetris);
     });
 }
 
-#[derive(Debug)]
-enum InputEvent {
-    KeyDown(Key),
-    KeyUp(Key),
-    WindowClosed,
-}
-
-fn game_loop(mut tetris: TetrisGame, input_receiver: mpsc::Receiver<InputEvent>) {
+fn game_loop(mut tetris: TetrisGame) {
     let mut loop_start = Instant::now();
     let frame_time = Duration::from_secs_f64(1.0 / 60.0); // 60fps
 
@@ -65,27 +60,15 @@ fn game_loop(mut tetris: TetrisGame, input_receiver: mpsc::Receiver<InputEvent>)
         let delta_time = loop_start.elapsed();
         loop_start = Instant::now();
 
-        // Process all pending input events
-        while let Ok(input_event) = input_receiver.try_recv() {
-            match input_event {
-                InputEvent::WindowClosed => {
-                    println!("Window closed, exiting game loop");
-                    return;
-                },
-                InputEvent::KeyDown(key) => {
-                    println!("{:?} key down", key);
-                },
-                InputEvent::KeyUp(key) => {
-                    println!("{:?} key up", key);
-                },
-                _ => {
-                    println!("Unrecognised event");
-                }
-            }
-        }
-
         // Update game state
-        tetris.game_tick(delta_time);
+        let output_event = tetris.game_tick(delta_time);
+
+        match output_event {
+            tetris::OutputEvent::Exit => {
+                break;
+            },
+            _ => {}
+        }
 
         // Render the game
         tetris.render();
