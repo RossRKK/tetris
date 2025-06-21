@@ -28,7 +28,13 @@ fn main() {
                         DrawEvent::Closed => {
                             let _ = input_sender.send(InputEvent::WindowClosed);
                             break;
-                        }
+                        },
+                        DrawEvent::KeyUp(_, Some(key)) => {
+                            input_sender.send(InputEvent::KeyUp(key));
+                        },
+                        DrawEvent::KeyDown(_, Some(key)) => {
+                            input_sender.send(InputEvent::KeyDown(key));
+                        },
                         _ => {
                             // Handle other events as needed
                         }
@@ -44,6 +50,8 @@ fn main() {
 
 #[derive(Debug)]
 enum InputEvent {
+    KeyDown(Key),
+    KeyUp(Key),
     WindowClosed,
 }
 
@@ -61,6 +69,15 @@ fn game_loop(mut tetris: tetris::Tetris, input_receiver: mpsc::Receiver<InputEve
                 InputEvent::WindowClosed => {
                     println!("Window closed, exiting game loop");
                     return;
+                },
+                InputEvent::KeyDown(key) => {
+                    println!("{:?} key down", key);
+                },
+                InputEvent::KeyUp(key) => {
+                    println!("{:?} key up", key);
+                },
+                _ => {
+                    println!("Unrecognised event");
                 }
             }
         }
