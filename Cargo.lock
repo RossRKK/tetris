@@ -1963,6 +1963,7 @@ version = "0.1.0"
 dependencies = [
  "flo_canvas",
  "flo_draw",
+ "futures",
 ]
 
 [[package]]
