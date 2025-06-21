@@ -1,21 +1,30 @@
+pub trait RenderEngine {
+    fn clear_canvas(&self);
+    fn draw_square(&self);
+}
+
 use flo_draw::*;
 use flo_canvas::*;
 
-pub struct RenderEngine {
+
+pub struct FloDrawRenderEngine {
     pub canvas: DrawingTarget,
 }
 
-impl RenderEngine {
+impl FloDrawRenderEngine {
     pub fn new(canvas: DrawingTarget) -> Self {
-        RenderEngine { canvas: canvas }
+        Self { canvas: canvas }
     }
+}
 
-    pub fn clear_canvas(self: &RenderEngine) {
+impl RenderEngine for FloDrawRenderEngine {
+
+    fn clear_canvas(self: &Self) {
 
     }
 
     
-    pub fn draw_square(self: &RenderEngine) {
+    fn draw_square(self: &Self) {
         self.canvas.draw(|gc| {
             gc.clear_canvas(Color::Rgba(0.0, 0.0, 0.0, 1.0));
             gc.canvas_height(1000.0);
