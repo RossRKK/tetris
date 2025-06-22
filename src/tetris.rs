@@ -12,8 +12,10 @@ pub const PLAY_FIELD_HEIGHT: usize = 20;
 
 #[derive(Debug, Copy, Clone)]
 pub enum GameAction {
-    RotateClockwise,
-    RotateAntiClockwise,
+    Rotate,
+    MoveDown,
+    MoveRight,
+    MoveLeft,
 }
 
 #[derive(Debug)]
@@ -31,6 +33,7 @@ pub enum OutputEvent {
 
 #[derive(Default)]
 #[derive(Clone)]
+#[derive(PartialEq)]
 pub enum Cell {
     #[default]
     Empty,
@@ -77,13 +80,49 @@ impl Tetris {
     }
 
     fn take_action(self: &mut Self, action: GameAction) {
+        let tetronimo_backup = self.current_tetromino.clone();
         match action {
-            GameAction::RotateClockwise => {
+            GameAction::Rotate => {
                 self.current_tetromino.rotate(tetronimo::RotationDirection::Clockwise);
             },
-            GameAction::RotateAntiClockwise => {
-                self.current_tetromino.rotate(tetronimo::RotationDirection::AntiClockwise);
+            GameAction::MoveDown => {
+                let (x, y) = self.current_tetromino.position;
+                self.current_tetromino.position = (x, y - 1);
+            },
+            GameAction::MoveRight => {
+                let (x, y) = self.current_tetromino.position;
+                self.current_tetromino.position = (x + 1, y);
+            },
+            GameAction::MoveLeft => {
+                let (x, y) = self.current_tetromino.position;
+                self.current_tetromino.position = (x - 1, y);
+            },
+        }
+
+        let mut legal_move = true;
+        for (x_offset, y_offset) in self.current_tetromino.get_positions() {
+            let (x_origin, y_origin) = self.current_tetromino.position;
+            let (x, y) = (x_origin + x_offset, y_origin + y_offset);
+
+            if x < 0 || x >= PLAY_FIELD_WIDTH as i32 {
+                legal_move = false;
+                break;
             }
+
+            if y < 0 {
+                legal_move = false;
+                break;
+            }
+
+            if y < PLAY_FIELD_HEIGHT as i32 && self.play_field[[x as usize, y as usize]] == Cell::Block {
+                legal_move = false;
+                break;
+            }
+        }
+
+        //if the move isn't legal undo it
+        if !legal_move {
+            self.current_tetromino = tetronimo_backup;
         }
     }
 

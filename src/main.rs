@@ -34,15 +34,18 @@ fn main() {
                             let _ = input_sender.send(tetris::InputEvent::Quit);
                             break;
                         },
-                        DrawEvent::KeyUp(_, Some(Key::KeyLeft)) => {
-                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::RotateAntiClockwise));
+                        DrawEvent::KeyDown(_, Some(Key::KeyUp)) => {
+                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::Rotate));
                         },
-                        DrawEvent::KeyUp(_, Some(Key::KeyRight)) => {
-                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::RotateClockwise));
+                        DrawEvent::KeyDown(_, Some(Key::KeyLeft)) => {
+                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::MoveLeft));
                         },
-                        // DrawEvent::KeyDown(_, Some(key)) => {
-                        //     let _ = input_sender.send(InputEvent::KeyDown(key));
-                        // },
+                        DrawEvent::KeyDown(_, Some(Key::KeyRight)) => {
+                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::MoveRight));
+                        },
+                        DrawEvent::KeyDown(_, Some(Key::KeyDown)) => {
+                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::MoveDown));
+                        },
                         _ => {
                             // Handle other events as needed
                         }

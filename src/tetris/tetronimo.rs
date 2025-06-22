@@ -106,6 +106,7 @@ pub enum RotationDirection {
 }
 
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct Tetromino {
     pub tetromino_type: TetrominoType,
     rotation: usize,
@@ -114,7 +115,7 @@ pub struct Tetromino {
 
 impl Tetromino {
     pub fn new(tetromino_type: TetrominoType) -> Self {
-        Self { tetromino_type, rotation: 0, position: (5, 10) }
+        Self { tetromino_type, rotation: 0, position: (5, 20) }
     }
 
     pub fn random() -> Self {
