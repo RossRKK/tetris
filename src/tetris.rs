@@ -1,6 +1,8 @@
-use std::time::{Duration, Instant};
+use std::{collections::HashSet, time::{Duration, Instant}};
 
-use ndarray::Array2;
+use flo_canvas::curves::line;
+use ndarray::{Array2, Axis};
+use rand::seq::IndexedRandom;
 
 use crate::tetris::tetronimo::Tetromino;
 
@@ -155,6 +157,35 @@ impl Tetris {
         }
 
         self.current_tetromino = Tetromino::random();
+
+        self.clear_lines();
+    }
+
+    fn clear_lines(self: &mut Self) {
+        let mut row_index: usize = 0;
+
+        let mut cleared_lines: HashSet<usize> = HashSet::<usize>::new();
+
+        for row in self.play_field.lanes(Axis(0)) {
+            let line_complete = row.iter().all(|cell| *cell == Cell::Block);
+            
+            if line_complete {
+                cleared_lines.insert(row_index);
+            }
+            row_index += 1;
+        }
+
+
+        if cleared_lines.len() == 4 {
+            println!("Tetris!");
+        } else {
+            println!("Cleared {} lines", cleared_lines.len());
+        }
+
+        let new_field = self.play_field.select(Axis(1), &(0..PLAY_FIELD_HEIGHT).filter(|x| !cleared_lines.contains(x)).collect::<Vec<_>>());
+        let empty_rows = Array2::from_elem((PLAY_FIELD_WIDTH, cleared_lines.len()), Cell::Empty);
+
+        self.play_field = ndarray::concatenate![Axis(1), new_field, empty_rows];
     }
 
     pub fn game_tick(self: &mut Self, _: Duration) -> OutputEvent {
