@@ -7,7 +7,8 @@ use std::time::{Instant, Duration};
 use std::sync::mpsc;
 use std::thread;
 
-type TetrisGame = tetris::Tetris<tetris::render_engine::FloDrawRenderEngine>;
+use crate::tetris::render_engine::RenderEngine;
+use crate::tetris::{InputEvent, Tetris};
 
 fn main() {
     with_2d_graphics(|| {
@@ -19,7 +20,7 @@ fn main() {
         // Create a channel for sending input events to the game loop
         let (input_sender, input_receiver) = mpsc::channel();
 
-        let tetris: TetrisGame = tetris::Tetris::new(render_engine, input_receiver);
+        let tetris = Tetris::new();
 
         // Spawn event handler thread
         thread::spawn(move || {
@@ -48,17 +49,21 @@ fn main() {
         });
 
         // Run the game loop in the main thread
-        game_loop(tetris);
+        game_loop(tetris, render_engine, input_receiver);
     });
 }
 
-fn game_loop(mut tetris: TetrisGame) {
+fn game_loop(mut tetris: Tetris, render_engine: impl RenderEngine, event_queue: mpsc::Receiver<InputEvent>) {
     let mut loop_start = Instant::now();
     let frame_time = Duration::from_secs_f64(1.0 / 60.0); // 60fps
 
     loop {
         let delta_time = loop_start.elapsed();
         loop_start = Instant::now();
+
+        while let Ok(input_event) = event_queue.try_recv() {
+            tetris.recieve_event(input_event);
+        }
 
         // Update game state
         let output_event = tetris.game_tick(delta_time);
@@ -70,8 +75,8 @@ fn game_loop(mut tetris: TetrisGame) {
             _ => {}
         }
 
-        // Render the game
-        tetris.render();
+        // Render the gamex
+        render_engine.render(&tetris);
 
         // Frame rate limiting
         let elapsed = loop_start.elapsed();

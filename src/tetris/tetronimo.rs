@@ -1,11 +1,16 @@
 use rand::Rng;
+use std::ops::{Add, Sub, AddAssign, SubAssign};
+
 
 const TETRONIMO_SIZE: usize = 4;
 
-type PositionIndex = i32;
+pub type PositionIndex = i32;
+
+pub type Position = (PositionIndex, PositionIndex);
+
 
 // array representing a Tetromino in a specific orientiation
-type TetrominoRotation = [(PositionIndex, PositionIndex); TETRONIMO_SIZE];
+pub type TetrominoRotation = [(PositionIndex, PositionIndex); TETRONIMO_SIZE];
 
 // Square piece (O) - only 1 rotation needed
 const SQUARE_PIECE_POSITIONS: [TetrominoRotation; 1] = [
@@ -102,17 +107,18 @@ pub enum RotationDirection {
 
 #[derive(Debug)]
 pub struct Tetromino {
-    tetromino_type: TetrominoType,
+    pub tetromino_type: TetrominoType,
     rotation: usize,
+    pub position: Position,
 }
 
 impl Tetromino {
     pub fn new(tetromino_type: TetrominoType) -> Self {
-        Self { tetromino_type, rotation: 0 }
+        Self { tetromino_type, rotation: 0, position: (5, 10) }
     }
 
     pub fn random() -> Self {
-        Self { tetromino_type: TetrominoType::random(), rotation: 0 }
+        Self::new(TetrominoType::random())
     }
 
     pub fn rotate(&mut self, dir: RotationDirection) {

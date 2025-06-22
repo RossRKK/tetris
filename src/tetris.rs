@@ -1,12 +1,14 @@
 use std::time::Duration;
 
-use std::sync::mpsc;
-
 use ndarray::Array2;
 
+use crate::tetris::tetronimo::Tetromino;
 
 mod tetronimo;
 pub mod render_engine;
+
+pub const PLAY_FIELD_WIDTH: usize = 10;
+pub const PLAY_FIELD_HEIGHT: usize = 20;
 
 #[derive(Debug)]
 pub enum InputEvent {
@@ -29,53 +31,53 @@ pub enum Cell {
 }
 
 
-pub struct Tetris<R: render_engine::RenderEngine> {
-    render_engine:  R,
-    event_queue: mpsc::Receiver<InputEvent>,
+pub struct Tetris {
     play_field: ndarray::Array2<Cell>,
-    current_tetromino: tetronimo::Tetromino,
+    current_tetromino: Tetromino,
+    should_exit: bool,
 }
 
-impl <R: render_engine::RenderEngine> Tetris<R> {
-    pub fn new(render_engine: R, event_queue: mpsc::Receiver<InputEvent>) -> Self {
-        let play_field: Array2<Cell> = ndarray::Array2::<Cell>::from_elem((10, 20), Cell::Empty);
+impl Tetris {
+    pub fn new() -> Self {
+        let play_field: Array2<Cell> = ndarray::Array2::<Cell>::from_elem((PLAY_FIELD_WIDTH, PLAY_FIELD_HEIGHT), Cell::Empty);
 
         Tetris { 
-            render_engine, 
-            event_queue, 
             play_field,
-            current_tetromino: tetronimo::Tetromino::random(),
+            current_tetromino: Tetromino::random(),
+            should_exit: false,
         }
     }
 
+    pub fn recieve_event(self: &mut Self, input_event: InputEvent) {
+        match input_event {
+            InputEvent::Quit => {
+                println!("Window closed, exiting game loop");
+                self.should_exit = true;
+            },
+            // InputEvent::KeyDown(key) => {
+            //     println!("{:?} key down", key);
+            // },
+            // InputEvent::KeyUp(key) => {
+            //     println!("{:?} key up", key);
+            // },
+            _ => {
+                println!("Unrecognised event");
+            }
+        }
+    }
+
+    pub fn get_current_tetromino(self: &Self) -> &Tetromino {
+        &self.current_tetromino
+    }
+
     pub fn game_tick(self: &mut Self, delta_time: Duration) -> OutputEvent {
-        // println!("{:?}", delta_time);
+        if self.should_exit {
+            return OutputEvent::Exit;
+        }
 
         println!("{:?}", self.current_tetromino.get_positions());
         self.current_tetromino.rotate(tetronimo::RotationDirection::Clockwise);
 
-        while let Ok(input_event) = self.event_queue.try_recv() {
-            match input_event {
-                InputEvent::Quit => {
-                    println!("Window closed, exiting game loop");
-                    return OutputEvent::Exit;
-                },
-                // InputEvent::KeyDown(key) => {
-                //     println!("{:?} key down", key);
-                // },
-                // InputEvent::KeyUp(key) => {
-                //     println!("{:?} key up", key);
-                // },
-                _ => {
-                    println!("Unrecognised event");
-                }
-            }
-        }
-
         OutputEvent::NoOp
-    }
-
-    pub fn render(self: &Self) {
-        self.render_engine.draw_square();
     }
 }
