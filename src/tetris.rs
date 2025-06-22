@@ -10,9 +10,16 @@ pub mod render_engine;
 pub const PLAY_FIELD_WIDTH: usize = 10;
 pub const PLAY_FIELD_HEIGHT: usize = 20;
 
+#[derive(Debug, Copy, Clone)]
+pub enum GameAction {
+    RotateClockwise,
+    RotateAntiClockwise,
+}
+
 #[derive(Debug)]
 pub enum InputEvent {
     Quit,
+    TakeAction(GameAction),
 }
 
 #[derive(Debug)]
@@ -35,6 +42,7 @@ pub struct Tetris {
     play_field: ndarray::Array2<Cell>,
     current_tetromino: Tetromino,
     should_exit: bool,
+    action_queue: Vec<GameAction>,
 }
 
 impl Tetris {
@@ -45,6 +53,7 @@ impl Tetris {
             play_field,
             current_tetromino: Tetromino::random(),
             should_exit: false,
+            action_queue: Vec::<GameAction>::new(),
         }
     }
 
@@ -54,12 +63,9 @@ impl Tetris {
                 println!("Window closed, exiting game loop");
                 self.should_exit = true;
             },
-            // InputEvent::KeyDown(key) => {
-            //     println!("{:?} key down", key);
-            // },
-            // InputEvent::KeyUp(key) => {
-            //     println!("{:?} key up", key);
-            // },
+            InputEvent::TakeAction(action) => {
+                self.action_queue.push(action);
+            },
             _ => {
                 println!("Unrecognised event");
             }
@@ -70,13 +76,26 @@ impl Tetris {
         &self.current_tetromino
     }
 
+    fn take_action(self: &mut Self, action: GameAction) {
+        match action {
+            GameAction::RotateClockwise => {
+                self.current_tetromino.rotate(tetronimo::RotationDirection::Clockwise);
+            },
+            GameAction::RotateAntiClockwise => {
+                self.current_tetromino.rotate(tetronimo::RotationDirection::AntiClockwise);
+            }
+        }
+    }
+
     pub fn game_tick(self: &mut Self, delta_time: Duration) -> OutputEvent {
         if self.should_exit {
             return OutputEvent::Exit;
         }
 
-        println!("{:?}", self.current_tetromino.get_positions());
-        self.current_tetromino.rotate(tetronimo::RotationDirection::Clockwise);
+        let actions: Vec<GameAction> = self.action_queue.drain(..).collect();
+        for action in actions {
+            self.take_action(action);
+        }
 
         OutputEvent::NoOp
     }

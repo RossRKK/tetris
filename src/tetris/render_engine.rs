@@ -32,7 +32,7 @@ impl FloDrawRenderEngine {
         let (x, y) = &current_tetromino.position;
         let mut i: usize = 0;
         for (x_offset, y_offset) in current_tetromino.get_positions() {
-            self.draw_cell(gc, (x + x_offset, y + y_offset), colours[i]);
+            self.draw_cell(gc, (x + x_offset, y + y_offset), Color::Rgba(1.0, 0.0, 0.0, 1.0));
             i += 1;
         }
     }
@@ -96,8 +96,6 @@ impl RenderEngine for FloDrawRenderEngine {
             gc.clear_canvas(Color::Rgba(0.0, 0.0, 0.0, 1.0));
             gc.canvas_height(self.height);
             gc.center_region(0., 0., self.width, self.height);
-
-            
 
             gc.rect(0., 0., self.width, self.height);
             gc.fill_color(Color::Rgba(0.1, 0.1, 0.1, 1.0));

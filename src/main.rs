@@ -8,7 +8,7 @@ use std::sync::mpsc;
 use std::thread;
 
 use crate::tetris::render_engine::RenderEngine;
-use crate::tetris::{InputEvent, Tetris};
+use crate::tetris::{GameAction, InputEvent, Tetris};
 
 fn main() {
     with_2d_graphics(|| {
@@ -34,9 +34,12 @@ fn main() {
                             let _ = input_sender.send(tetris::InputEvent::Quit);
                             break;
                         },
-                        // DrawEvent::KeyUp(_, Some(key)) => {
-                        //     let _ = input_sender.send(InputEvent::KeyUp(key));
-                        // },
+                        DrawEvent::KeyUp(_, Some(Key::KeyLeft)) => {
+                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::RotateAntiClockwise));
+                        },
+                        DrawEvent::KeyUp(_, Some(Key::KeyRight)) => {
+                            let _ = input_sender.send(InputEvent::TakeAction(GameAction::RotateClockwise));
+                        },
                         // DrawEvent::KeyDown(_, Some(key)) => {
                         //     let _ = input_sender.send(InputEvent::KeyDown(key));
                         // },
@@ -83,6 +86,5 @@ fn game_loop(mut tetris: Tetris, render_engine: impl RenderEngine, event_queue: 
         if elapsed < frame_time {
             std::thread::sleep(frame_time - elapsed);
         }
-        break;
     }
 }
