@@ -29,23 +29,30 @@ pub enum Cell {
 }
 
 
-
 pub struct Tetris<R: render_engine::RenderEngine> {
     render_engine:  R,
     event_queue: mpsc::Receiver<InputEvent>,
     play_field: ndarray::Array2<Cell>,
-
+    current_tetromino: tetronimo::Tetromino,
 }
 
 impl <R: render_engine::RenderEngine> Tetris<R> {
     pub fn new(render_engine: R, event_queue: mpsc::Receiver<InputEvent>) -> Self {
         let play_field: Array2<Cell> = ndarray::Array2::<Cell>::from_elem((10, 20), Cell::Empty);
 
-        Tetris { render_engine: render_engine, event_queue: event_queue, play_field}
+        Tetris { 
+            render_engine, 
+            event_queue, 
+            play_field,
+            current_tetromino: tetronimo::Tetromino::random(),
+        }
     }
 
     pub fn game_tick(self: &mut Self, delta_time: Duration) -> OutputEvent {
         // println!("{:?}", delta_time);
+
+        println!("{:?}", self.current_tetromino.get_positions());
+        self.current_tetromino.rotate(tetronimo::RotationDirection::Clockwise);
 
         while let Ok(input_event) = self.event_queue.try_recv() {
             match input_event {

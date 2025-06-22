@@ -1,9 +1,11 @@
-const TetrominoSize: usize = 4;
+use rand::Rng;
+
+const TETRONIMO_SIZE: usize = 4;
 
 type PositionIndex = i32;
 
 // array representing a Tetromino in a specific orientiation
-type TetrominoRotation = [(PositionIndex, PositionIndex); TetrominoSize];
+type TetrominoRotation = [(PositionIndex, PositionIndex); TETRONIMO_SIZE];
 
 // Square piece (O) - only 1 rotation needed
 const SQUARE_PIECE_POSITIONS: [TetrominoRotation; 1] = [
@@ -52,6 +54,8 @@ const Z_PIECE_POSITIONS: [TetrominoRotation; 2] = [
     [(0, 0), (0, 1), (1, -1), (1, 0)]    // Z vertical
 ];
 
+#[derive(Clone, Copy)]
+#[derive(Debug)]
 pub enum TetrominoType {
     Square,
     Line,
@@ -74,6 +78,21 @@ impl TetrominoType {
             TetrominoType::Z => Z_PIECE_POSITIONS.len(),
         }
     }
+
+    const ALL_TYPES: [TetrominoType; 7] = [
+        TetrominoType::Square,
+        TetrominoType::Line,
+        TetrominoType::T,
+        TetrominoType::L, 
+        TetrominoType::J,
+        TetrominoType::S,
+        TetrominoType::Z,
+    ];
+
+    pub fn random() -> Self {
+        let mut rng = rand::rng();
+        Self::ALL_TYPES[rng.random_range(0..Self::ALL_TYPES.len())]
+    }
 }
 
 pub enum RotationDirection {
@@ -81,6 +100,7 @@ pub enum RotationDirection {
     AntiClockwise,
 }
 
+#[derive(Debug)]
 pub struct Tetromino {
     tetromino_type: TetrominoType,
     rotation: usize,
@@ -89,6 +109,10 @@ pub struct Tetromino {
 impl Tetromino {
     pub fn new(tetromino_type: TetrominoType) -> Self {
         Self { tetromino_type, rotation: 0 }
+    }
+
+    pub fn random() -> Self {
+        Self { tetromino_type: TetrominoType::random(), rotation: 0 }
     }
 
     pub fn rotate(&mut self, dir: RotationDirection) {
