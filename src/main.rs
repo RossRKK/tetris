@@ -83,5 +83,6 @@ fn game_loop(mut tetris: Tetris, render_engine: impl RenderEngine, event_queue: 
         if elapsed < frame_time {
             std::thread::sleep(frame_time - elapsed);
         }
+        break;
     }
 }
