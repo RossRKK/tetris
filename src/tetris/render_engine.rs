@@ -1,13 +1,9 @@
-use std::time::Duration;
-
-use crate::tetris::{tetronimo::Tetromino, tetronimo::Position, Tetris};
+use crate::tetris::{tetronimo::Tetromino, tetronimo::Position, Tetris, Cell};
 
 pub trait RenderEngine {
-    fn init(&self);
     fn render(&self, tetris: &Tetris);
 }
 
-use flo_draw::*;
 use flo_canvas::*;
 
 use crate::tetris;
@@ -21,8 +17,6 @@ pub struct FloDrawRenderEngine {
     height: f32,
 }
 
-const colours: [Color; 4] = [Color::Rgba(1.0, 0.0, 0.0, 1.0), Color::Rgba(0.0, 1.0, 0.0, 1.0), Color::Rgba(0.0, 1.0, 1.0, 1.0), Color::Rgba(1.0, 1.0, 0.0, 1.0)];
-
 impl FloDrawRenderEngine {
     pub fn new(canvas: DrawingTarget) -> Self {
         Self { canvas: canvas, width: CELL_SIZE * tetris::PLAY_FIELD_WIDTH as f32, height: CELL_SIZE * tetris::PLAY_FIELD_HEIGHT as f32 }
@@ -30,10 +24,9 @@ impl FloDrawRenderEngine {
 
     fn draw_current_tetrimino(self: &Self, gc: &mut Vec<Draw>, current_tetromino: &Tetromino) {
         let (x, y) = &current_tetromino.position;
-        let mut i: usize = 0;
+
         for (x_offset, y_offset) in current_tetromino.get_positions() {
-            self.draw_cell(gc, (x + x_offset, y + y_offset), Color::Rgba(1.0, 0.0, 0.0, 1.0));
-            i += 1;
+            self.draw_cell(gc, (x + x_offset, y + y_offset), Color::Rgba(0.8, 0.0, 0.0, 1.0));
         }
     }
 
@@ -87,10 +80,7 @@ impl FloDrawRenderEngine {
 }
 
 impl RenderEngine for FloDrawRenderEngine {
-    fn init(self: &Self) {
-        self.canvas.draw(|gc| {
-        });
-    }
+
     fn render(self: &Self, tetris: &Tetris) {
         self.canvas.draw(|gc| {
             gc.clear_canvas(Color::Rgba(0.0, 0.0, 0.0, 1.0));
@@ -102,6 +92,17 @@ impl RenderEngine for FloDrawRenderEngine {
             gc.fill();
 
             self.draw_gridlines(gc);
+
+            for x in 0..tetris::PLAY_FIELD_WIDTH {
+                for y in 0..tetris::PLAY_FIELD_HEIGHT {
+                    match tetris.play_field[[x, y]] {
+                        Cell::Block => {
+                            self.draw_cell(gc, (x as i32, y as i32), Color::Rgba(0.5, 0.5, 0.5, 1.0));
+                        }
+                        _ => {}
+                    }
+                }
+            }
 
             self.draw_current_tetrimino(gc, tetris.get_current_tetromino());
         });

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use ndarray::Array2;
 
@@ -46,6 +46,8 @@ pub struct Tetris {
     current_tetromino: Tetromino,
     should_exit: bool,
     action_queue: Vec<GameAction>,
+    move_down_delay: Duration,
+    time_of_last_move: Instant,
 }
 
 impl Tetris {
@@ -57,6 +59,8 @@ impl Tetris {
             current_tetromino: Tetromino::random(),
             should_exit: false,
             action_queue: Vec::<GameAction>::new(),
+            move_down_delay: Duration::from_secs(1),
+            time_of_last_move: Instant::now(),
         }
     }
 
@@ -79,7 +83,7 @@ impl Tetris {
         &self.current_tetromino
     }
 
-    fn take_action(self: &mut Self, action: GameAction) {
+    fn take_action(self: &mut Self, action: GameAction) -> bool {
         let tetronimo_backup = self.current_tetromino.clone();
         match action {
             GameAction::Rotate => {
@@ -123,17 +127,51 @@ impl Tetris {
         //if the move isn't legal undo it
         if !legal_move {
             self.current_tetromino = tetronimo_backup;
+
+            //if the game or the player was trying to move the piece down and couldn't
+            //commit it to the board
+            match action {
+                GameAction::MoveDown => {
+                    self.commit_current_tetromino();
+                },
+                _ => {}
+            }
+
+            return false;
         }
+        true
     }
 
-    pub fn game_tick(self: &mut Self, delta_time: Duration) -> OutputEvent {
+    fn commit_current_tetromino(self: &mut Self) {
+         for (x_offset, y_offset) in self.current_tetromino.get_positions() {
+            let (x_origin, y_origin) = self.current_tetromino.position;
+            let (x, y) = (x_origin + x_offset, y_origin + y_offset);
+
+            if y < PLAY_FIELD_HEIGHT as i32 {
+                self.play_field[[x as usize, y as usize]] = Cell::Block;
+            } else {
+                todo!("Game Over");
+            }
+        }
+
+        self.current_tetromino = Tetromino::random();
+    }
+
+    pub fn game_tick(self: &mut Self, _: Duration) -> OutputEvent {
         if self.should_exit {
             return OutputEvent::Exit;
         }
 
         let actions: Vec<GameAction> = self.action_queue.drain(..).collect();
         for action in actions {
-            self.take_action(action);
+            let _ = self.take_action(action);
+        }
+
+        if self.time_of_last_move.elapsed() > self.move_down_delay {
+            //auto-tick down
+            let _ = self.take_action(GameAction::MoveDown);
+
+            self.time_of_last_move = Instant::now();
         }
 
         OutputEvent::NoOp

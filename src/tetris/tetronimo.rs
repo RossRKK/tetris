@@ -1,6 +1,4 @@
 use rand::Rng;
-use std::ops::{Add, Sub, AddAssign, SubAssign};
-
 
 const TETRONIMO_SIZE: usize = 4;
 
@@ -49,14 +47,14 @@ const J_PIECE_POSITIONS: [TetrominoRotation; 4] = [
 
 // S piece - 2 rotations needed
 const S_PIECE_POSITIONS: [TetrominoRotation; 2] = [
-    [(-1, 0), (0, 0), (0, 1), (1, 1)],   // S horizontal
-    [(0, -1), (0, 0), (1, 0), (1, 1)]    // S vertical
+    [(1, 0), (0, 0), (0, 1), (-1, 1)],   // S horizontal
+    [(-1, -1), (-1, 0), (0, 0), (0, 1)]    // S vertical
 ];
 
 // Z piece - 2 rotations needed
 const Z_PIECE_POSITIONS: [TetrominoRotation; 2] = [
-    [(-1, 1), (0, 1), (0, 0), (1, 0)],   // Z horizontal
-    [(0, 0), (0, 1), (1, -1), (1, 0)]    // Z vertical
+    [(-1, 0), (0, 0), (0, 1), (1, 1)],   // Z horizontal
+    [(0, -1), (0, 0), (-1, 0), (-1, 1)]    // Z vertical
 ];
 
 #[derive(Clone, Copy)]

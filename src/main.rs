@@ -1,7 +1,6 @@
 mod tetris;
 
 use flo_draw::*;
-use flo_canvas::*;
 
 use std::time::{Instant, Duration};
 use std::sync::mpsc;
