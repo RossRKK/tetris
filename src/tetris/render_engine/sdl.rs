@@ -5,7 +5,6 @@ use sdl2::pixels::Color as SDL2Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
-use std::cell::RefCell;
 
 use crate::tetris;
 
