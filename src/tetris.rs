@@ -1,8 +1,6 @@
 use std::{collections::HashSet, time::{Duration, Instant}};
 
-use flo_canvas::curves::line;
 use ndarray::{Array2, Axis};
-use rand::seq::IndexedRandom;
 
 use crate::tetris::tetronimo::Tetromino;
 
