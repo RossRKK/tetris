@@ -14,7 +14,9 @@ const fn from_frames(frames: u64) -> Duration {
     Duration::from_nanos(016666666 * frames)
 }
 
-const LEVEL_DROP_DURATIONS: [Duration; 21] = [from_frames(53), from_frames(49), from_frames(45), from_frames(41), from_frames(37), from_frames(33), from_frames(28), from_frames(22), from_frames(17), from_frames(11), from_frames(10), from_frames(9), from_frames(8), from_frames(7), from_frames(6), from_frames(6), from_frames(5), from_frames(5), from_frames(4), from_frames(4), from_frames(3)];
+const MAX_LEVEL: usize = 21;
+
+const LEVEL_DROP_DURATIONS: [Duration; MAX_LEVEL] = [from_frames(53), from_frames(49), from_frames(45), from_frames(41), from_frames(37), from_frames(33), from_frames(28), from_frames(22), from_frames(17), from_frames(11), from_frames(10), from_frames(9), from_frames(8), from_frames(7), from_frames(6), from_frames(6), from_frames(5), from_frames(5), from_frames(4), from_frames(4), from_frames(3)];
 
 #[derive(Debug, Copy, Clone)]
 pub enum GameAction {
@@ -58,6 +60,7 @@ impl Cell {
 pub struct Tetris {
     level: u32,
     score: u32,
+    lines_to_clear_before_next_level: u32,
     play_field: ndarray::Array2<Cell>,
     current_tetromino: Tetromino,
     should_exit: bool,
@@ -67,12 +70,13 @@ pub struct Tetris {
 }
 
 impl Tetris {
-    pub fn new() -> Self {
+    pub fn new(level: u32) -> Self {
         let play_field: Array2<Cell> = ndarray::Array2::<Cell>::from_elem((PLAY_FIELD_WIDTH, PLAY_FIELD_HEIGHT), Cell::Empty);
 
         Tetris { 
-            level: 0,
+            level: level,
             score: 0,
+            lines_to_clear_before_next_level: (level * 10) + 10, //based on gameboy marathon mode
             play_field,
             current_tetromino: Tetromino::random(),
             should_exit: false,
@@ -101,7 +105,7 @@ impl Tetris {
         &self.current_tetromino
     }
 
-    fn take_action(self: &mut Self, action: GameAction) -> bool {
+    fn take_action(self: &mut Self, action: GameAction) -> OutputEvent {
         let tetronimo_backup = self.current_tetromino.clone();
         match action {
             GameAction::Rotate => {
@@ -150,17 +154,15 @@ impl Tetris {
             //commit it to the board
             match action {
                 GameAction::MoveDown => {
-                    self.commit_current_tetromino();
+                    return self.commit_current_tetromino();
                 },
-                _ => {}
+                _ => { return OutputEvent::NoOp; }
             }
-
-            return false;
         }
-        true
+        OutputEvent::NoOp
     }
 
-    fn commit_current_tetromino(self: &mut Self) {
+    fn commit_current_tetromino(self: &mut Self) -> OutputEvent {
          for (x_offset, y_offset) in self.current_tetromino.get_positions() {
             let (x_origin, y_origin) = self.current_tetromino.position;
             let (x, y) = (x_origin + x_offset, y_origin + y_offset);
@@ -168,13 +170,17 @@ impl Tetris {
             if y < PLAY_FIELD_HEIGHT as i32 {
                 self.play_field[[x as usize, y as usize]] = Cell::Block(self.current_tetromino.tetromino_type);
             } else {
-                todo!("Game Over");
+                //game over
+                println!("Level: {}", self.level);
+                println!("Score: {}", self.score);
+                return OutputEvent::Exit;
             }
         }
 
         self.current_tetromino = Tetromino::random();
 
         self.clear_lines();
+        OutputEvent::NoOp
     }
 
     fn clear_lines(self: &mut Self) {
@@ -194,8 +200,6 @@ impl Tetris {
 
         if cleared_lines.len() == 4 {
             println!("Tetris!");
-        } else {
-            println!("Cleared {} lines", cleared_lines.len());
         }
 
         // based on nintendo gameboy scoring system
@@ -207,6 +211,18 @@ impl Tetris {
             4 => { self.score += 1200 * (self.level + 1) },
             _ => {}
         }
+
+        if cleared_lines.len() as u32 > self.lines_to_clear_before_next_level {
+            self.lines_to_clear_before_next_level = 10;
+            if self.level < MAX_LEVEL as u32 {
+                self.level += 1;
+            }
+            println!("Level: {}", self.level);
+            println!("Score: {}", self.score);
+        } else {
+            self.lines_to_clear_before_next_level -= cleared_lines.len() as u32;
+        }
+        
 
         let new_field = self.play_field.select(Axis(1), &(0..PLAY_FIELD_HEIGHT).filter(|x| !cleared_lines.contains(x)).collect::<Vec<_>>());
         let empty_rows = Array2::from_elem((PLAY_FIELD_WIDTH, cleared_lines.len()), Cell::Empty);
@@ -221,12 +237,22 @@ impl Tetris {
 
         let actions: Vec<GameAction> = self.action_queue.drain(..).collect();
         for action in actions {
-            let _ = self.take_action(action);
+            let output_event = self.take_action(action);
+
+            match output_event {
+                OutputEvent::Exit => return output_event,
+                _ => {}
+            }
         }
 
         if self.time_of_last_move.elapsed() > LEVEL_DROP_DURATIONS[self.level as usize] {
             //auto-tick down
-            let _ = self.take_action(GameAction::MoveDown);
+            let output_event = self.take_action(GameAction::MoveDown);
+
+            match output_event {
+                OutputEvent::Exit => return output_event,
+                _ => {}
+            }
 
             self.time_of_last_move = Instant::now();
         }

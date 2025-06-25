@@ -27,7 +27,7 @@ fn run_with_sdl() {
 
     let render_engine = SDL2RenderEngine::new(&sdl_context);
 
-    let tetris = Tetris::new();
+    let tetris = Tetris::new(0);
 
     let event_pump = sdl_context.event_pump().unwrap();
 
