@@ -3,7 +3,9 @@ use sdl2::{AudioSubsystem, Sdl};
 
 use std::time::{Instant, Duration};
 
-const SAMPLE_RATE: i32 = 4100;
+const SAMPLE_RATE: i32 = 44100;
+
+mod tetris_songs;
 
 type SampleCounter = usize;
 
@@ -18,12 +20,13 @@ pub fn init(audio_subsystem: &AudioSubsystem) -> AudioDevice<Synthesizer> {
             // initialize the audio callback
             Synthesizer {
                 tracker: 0,
-                track: vec!({ Note {
-                    start_time : (SAMPLE_RATE as SampleCounter), 
-                    end_time: (SAMPLE_RATE as SampleCounter) * 5,
-                    volume: 1.,
-                    interval_length: 1000,
-                }}),
+                // track: vec!({ Note {
+                //     start_time : (SAMPLE_RATE as SampleCounter), 
+                //     end_time: (SAMPLE_RATE as SampleCounter) * 5,
+                //     volume: 1.,
+                //     interval_length: 1000,
+                // }}),
+                track: tetris_songs::SONG_4.to_vec(),
             }
     }).unwrap();
 
@@ -32,6 +35,7 @@ pub fn init(audio_subsystem: &AudioSubsystem) -> AudioDevice<Synthesizer> {
     device
 }
 
+#[derive(Clone)]
 pub struct Note {
     start_time: SampleCounter,
     end_time: SampleCounter,
@@ -66,9 +70,10 @@ impl AudioCallback for Synthesizer {
             *x = 0.;
             for note in &self.track {
                 if note.start_time <= self.tracker && note.end_time >= self.tracker {
-                    *x += note.sample(&self.tracker);
+                    *x += note.sample(&self.tracker)/4.;
                 }
             }
+
         }
     }
 }
