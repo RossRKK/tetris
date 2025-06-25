@@ -65,17 +65,10 @@ impl AudioCallback for Synthesizer {
             self.tracker += 1;
             *x = 0.;
             for note in &self.track {
-                if note.start_time > self.tracker && note.end_time < self.tracker {
+                if note.start_time <= self.tracker && note.end_time >= self.tracker {
                     *x += note.sample(&self.tracker);
                 }
             }
         }
     }
 }
-
-struct SquareWave {
-    phase_inc: f32,
-    phase: f32,
-    volume: f32
-}
-
