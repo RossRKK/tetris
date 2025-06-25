@@ -10,6 +10,12 @@ pub mod render_engine;
 pub const PLAY_FIELD_WIDTH: usize = 10;
 pub const PLAY_FIELD_HEIGHT: usize = 20;
 
+const fn from_frames(frames: u64) -> Duration {
+    Duration::from_nanos(016666666 * frames)
+}
+
+const LEVEL_DROP_DURATIONS: [Duration; 21] = [from_frames(53), from_frames(49), from_frames(45), from_frames(41), from_frames(37), from_frames(33), from_frames(28), from_frames(22), from_frames(17), from_frames(11), from_frames(10), from_frames(9), from_frames(8), from_frames(7), from_frames(6), from_frames(6), from_frames(5), from_frames(5), from_frames(4), from_frames(4), from_frames(3)];
+
 #[derive(Debug, Copy, Clone)]
 pub enum GameAction {
     Rotate,
@@ -50,6 +56,8 @@ impl Cell {
 
 
 pub struct Tetris {
+    level: u32,
+    score: u32,
     play_field: ndarray::Array2<Cell>,
     current_tetromino: Tetromino,
     should_exit: bool,
@@ -63,6 +71,8 @@ impl Tetris {
         let play_field: Array2<Cell> = ndarray::Array2::<Cell>::from_elem((PLAY_FIELD_WIDTH, PLAY_FIELD_HEIGHT), Cell::Empty);
 
         Tetris { 
+            level: 0,
+            score: 0,
             play_field,
             current_tetromino: Tetromino::random(),
             should_exit: false,
@@ -188,6 +198,16 @@ impl Tetris {
             println!("Cleared {} lines", cleared_lines.len());
         }
 
+        // based on nintendo gameboy scoring system
+        //TODO: soft drop scoring
+        match cleared_lines.len() {
+            1 => { self.score += 40 * (self.level + 1)},
+            2 => { self.score += 100 * (self.level + 1) },
+            3 => { self.score += 300 * (self.level + 1) },
+            4 => { self.score += 1200 * (self.level + 1) },
+            _ => {}
+        }
+
         let new_field = self.play_field.select(Axis(1), &(0..PLAY_FIELD_HEIGHT).filter(|x| !cleared_lines.contains(x)).collect::<Vec<_>>());
         let empty_rows = Array2::from_elem((PLAY_FIELD_WIDTH, cleared_lines.len()), Cell::Empty);
 
@@ -204,7 +224,7 @@ impl Tetris {
             let _ = self.take_action(action);
         }
 
-        if self.time_of_last_move.elapsed() > self.move_down_delay {
+        if self.time_of_last_move.elapsed() > LEVEL_DROP_DURATIONS[self.level as usize] {
             //auto-tick down
             let _ = self.take_action(GameAction::MoveDown);
 
