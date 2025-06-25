@@ -1,4 +1,5 @@
 mod tetris;
+mod synthesizer;
 
 
 use std::time::{Instant, Duration};
@@ -8,14 +9,17 @@ use std::thread;
 use crate::tetris::render_engine::RenderEngine;
 use crate::tetris::{GameAction, InputEvent, Tetris};
 
+use sdl2::audio;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use crate::tetris::render_engine::sdl::SDL2RenderEngine;
 
 
+
 fn main() {
     run_with_sdl();
 }
+
 
 
 fn run_with_sdl() {
@@ -27,7 +31,14 @@ fn run_with_sdl() {
 
     let event_pump = sdl_context.event_pump().unwrap();
 
+    let audio_subsystem = sdl_context.audio().unwrap();
+
+    let audio_device = synthesizer::init(&audio_subsystem);
+
     game_loop(tetris, render_engine, event_pump);
+
+    //only really here so the audio device doesn't get disposed which stops the sound
+    audio_device.pause();
 }
 
 fn game_loop(mut tetris: Tetris, mut render_engine: impl RenderEngine, mut event_pump: sdl2::EventPump) {
