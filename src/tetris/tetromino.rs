@@ -1,6 +1,6 @@
 use rand::Rng;
 
-const TETRONIMO_SIZE: usize = 4;
+const TETROMINO_SIZE: usize = 4;
 
 pub type PositionIndex = i32;
 
@@ -8,7 +8,7 @@ pub type Position = (PositionIndex, PositionIndex);
 
 
 // array representing a Tetromino in a specific orientiation
-pub type TetrominoRotation = [(PositionIndex, PositionIndex); TETRONIMO_SIZE];
+pub type TetrominoRotation = [(PositionIndex, PositionIndex); TETROMINO_SIZE];
 
 // Square piece (O) - only 1 rotation needed
 const SQUARE_PIECE_POSITIONS: [TetrominoRotation; 1] = [

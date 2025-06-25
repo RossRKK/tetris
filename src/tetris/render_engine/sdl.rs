@@ -1,14 +1,18 @@
-use crate::tetris::{tetronimo::Tetromino, tetronimo::Position, Tetris, Cell};
+use crate::tetris::{tetromino::Tetromino, tetromino::Position, tetromino::TetrominoType, Tetris, Cell};
 use crate::tetris::render_engine::RenderEngine;
 
 use sdl2::pixels::Color as SDL2Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::Sdl;
 
 use crate::tetris;
 
-const CELL_SIZE: i32 = 30;
+pub const CELL_SIZE: i32 = 30;
+
+const GRID_LINE_COLOR: SDL2Color = SDL2Color::RGB(128, 128, 128);
+const BACKGROUND_COLOR: SDL2Color = SDL2Color::RGB(20, 20, 20);
 
 pub struct SDL2RenderEngine {
     canvas: Canvas<Window>,
@@ -16,10 +20,31 @@ pub struct SDL2RenderEngine {
     height: i32,
 }
 
+fn get_tetronimo_colour(tetromino_type: TetrominoType) -> SDL2Color {
+    match tetromino_type {
+            TetrominoType::Square => { SDL2Color::RGB(247, 211, 8)}
+            TetrominoType::Line => { SDL2Color::RGB(49, 199, 239)}
+            TetrominoType::T => { SDL2Color::RGB(173, 77, 156)}
+            TetrominoType::L => { SDL2Color::RGB(239, 121, 33)}
+            TetrominoType::J => { SDL2Color::RGB(90, 101, 173)}
+            TetrominoType::S => { SDL2Color::RGB(66, 182, 66)}
+            TetrominoType::Z => { SDL2Color::RGB(239, 32, 41)}
+    }
+}
+
 impl SDL2RenderEngine {
-    pub fn new(canvas: Canvas<Window>) -> Self {
+    pub fn new(sdl_context: &Sdl) -> Self {
         let width = CELL_SIZE * tetris::PLAY_FIELD_WIDTH as i32;
         let height = CELL_SIZE * tetris::PLAY_FIELD_HEIGHT as i32;
+        let video_subsystem = sdl_context.video().unwrap();
+
+        let window = video_subsystem
+            .window("Tetris", width as u32, height as u32)
+            .position_centered()
+            .build()
+            .unwrap();
+
+        let canvas = window.into_canvas().build().unwrap();
         
         Self {
             canvas: canvas,
@@ -38,29 +63,30 @@ impl SDL2RenderEngine {
         self.canvas.set_draw_color(color);
         let _ = self.canvas.fill_rect(rect);
         
-        self.canvas.set_draw_color(SDL2Color::RGB(100, 100, 100));
-        let _ = self.canvas.draw_rect(rect);
+        // self.canvas.set_draw_color(GRID_LINE_COLOR);
+        // let _ = self.canvas.draw_rect(rect);
     }
 
     fn draw_current_tetrimino(&mut self, current_tetromino: &Tetromino) {
         let (x, y) = &current_tetromino.position;
 
         for (x_offset, y_offset) in current_tetromino.get_positions() {
-            self.draw_cell((x + x_offset, y + y_offset), SDL2Color::RGB(200, 0, 0));
+            self.draw_cell((x + x_offset, y + y_offset), get_tetronimo_colour(current_tetromino.tetromino_type));
         }
     }
 
     fn draw_gridlines(&mut self) {
-        self.canvas.set_draw_color(SDL2Color::RGB(50, 50, 50));
+        self.canvas.set_draw_color(GRID_LINE_COLOR);
 
         for x in 0..=tetris::PLAY_FIELD_WIDTH {
             let x_pos = x as i32 * CELL_SIZE;
             let _ = self.canvas.draw_line((x_pos, 0), (x_pos, self.height));
+            let _ = self.canvas.draw_line((x_pos + CELL_SIZE - 1, 0), (x_pos + CELL_SIZE - 1, self.height));
         }
 
         for y in 0..=tetris::PLAY_FIELD_HEIGHT {
             let y_pos = y as i32 * CELL_SIZE;
-            let _ = self.canvas.draw_line((0, y_pos), (self.width, y_pos));
+            let _ = self.canvas.draw_line((0, y_pos + CELL_SIZE - 1), (self.width, y_pos + CELL_SIZE - 1));
         }
     }
 }
@@ -68,16 +94,16 @@ impl SDL2RenderEngine {
 impl RenderEngine for SDL2RenderEngine {
     fn render(&mut self, tetris: &Tetris) {
         
-        self.canvas.set_draw_color(SDL2Color::RGB(20, 20, 20));
+        self.canvas.set_draw_color(BACKGROUND_COLOR);
         self.canvas.clear();
 
-        self.draw_gridlines();
+
 
         for x in 0..tetris::PLAY_FIELD_WIDTH {
             for y in 0..tetris::PLAY_FIELD_HEIGHT {
                 match tetris.play_field[[x, y]] {
-                    Cell::Block => {
-                        self.draw_cell((x as i32, y as i32), SDL2Color::RGB(128, 128, 128));
+                    Cell::Block(tetromino_type) => {
+                        self.draw_cell((x as i32, y as i32), get_tetronimo_colour(tetromino_type));
                     }
                     _ => {}
                 }
@@ -85,6 +111,8 @@ impl RenderEngine for SDL2RenderEngine {
         }
 
         self.draw_current_tetrimino(tetris.get_current_tetromino());
+
+        self.draw_gridlines();
         
         self.canvas.present();
     }

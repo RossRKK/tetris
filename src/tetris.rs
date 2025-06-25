@@ -2,9 +2,9 @@ use std::{collections::HashSet, time::{Duration, Instant}};
 
 use ndarray::{Array2, Axis};
 
-use crate::tetris::tetronimo::Tetromino;
+use crate::tetris::tetromino::{Tetromino, TetrominoType};
 
-mod tetronimo;
+pub mod tetromino;
 pub mod render_engine;
 
 pub const PLAY_FIELD_WIDTH: usize = 10;
@@ -33,11 +33,19 @@ pub enum OutputEvent {
 
 #[derive(Default)]
 #[derive(Clone)]
-#[derive(PartialEq)]
 pub enum Cell {
     #[default]
     Empty,
-    Block,
+    Block(tetromino::TetrominoType),
+}
+
+impl Cell {
+    fn is_block(self: &Self) -> bool {
+        match self {
+            Cell::Empty => { false }
+            Cell::Block(_) => { true }
+        }
+    }
 }
 
 
@@ -87,7 +95,7 @@ impl Tetris {
         let tetronimo_backup = self.current_tetromino.clone();
         match action {
             GameAction::Rotate => {
-                self.current_tetromino.rotate(tetronimo::RotationDirection::Clockwise);
+                self.current_tetromino.rotate(tetromino::RotationDirection::Clockwise);
             },
             GameAction::MoveDown => {
                 let (x, y) = self.current_tetromino.position;
@@ -118,7 +126,7 @@ impl Tetris {
                 break;
             }
 
-            if y < PLAY_FIELD_HEIGHT as i32 && self.play_field[[x as usize, y as usize]] == Cell::Block {
+            if y < PLAY_FIELD_HEIGHT as i32 && self.play_field[[x as usize, y as usize]].is_block() {
                 legal_move = false;
                 break;
             }
@@ -148,7 +156,7 @@ impl Tetris {
             let (x, y) = (x_origin + x_offset, y_origin + y_offset);
 
             if y < PLAY_FIELD_HEIGHT as i32 {
-                self.play_field[[x as usize, y as usize]] = Cell::Block;
+                self.play_field[[x as usize, y as usize]] = Cell::Block(self.current_tetromino.tetromino_type);
             } else {
                 todo!("Game Over");
             }
@@ -165,7 +173,7 @@ impl Tetris {
         let mut cleared_lines: HashSet<usize> = HashSet::<usize>::new();
 
         for row in self.play_field.lanes(Axis(0)) {
-            let line_complete = row.iter().all(|cell| *cell == Cell::Block);
+            let line_complete = row.iter().all(|cell| cell.is_block());
             
             if line_complete {
                 cleared_lines.insert(row_index);
