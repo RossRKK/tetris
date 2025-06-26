@@ -1,7 +1,5 @@
 use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
-use sdl2::{AudioSubsystem, Sdl};
-
-use std::time::{Instant, Duration};
+use sdl2::AudioSubsystem;
 
 const SAMPLE_RATE: i32 = 44100;
 

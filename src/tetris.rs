@@ -2,7 +2,7 @@ use std::{collections::HashSet, time::{Duration, Instant}};
 
 use ndarray::{Array2, Axis};
 
-use crate::tetris::tetromino::{Tetromino, TetrominoType};
+use crate::tetris::tetromino::Tetromino;
 
 pub mod tetromino;
 pub mod render_engine;
@@ -65,7 +65,6 @@ pub struct Tetris {
     current_tetromino: Tetromino,
     should_exit: bool,
     action_queue: Vec<GameAction>,
-    move_down_delay: Duration,
     time_of_last_move: Instant,
 }
 
@@ -81,7 +80,6 @@ impl Tetris {
             current_tetromino: Tetromino::random(),
             should_exit: false,
             action_queue: Vec::<GameAction>::new(),
-            move_down_delay: Duration::from_secs(1),
             time_of_last_move: Instant::now(),
         }
     }

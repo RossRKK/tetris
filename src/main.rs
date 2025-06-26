@@ -3,13 +3,10 @@ mod synthesizer;
 
 
 use std::time::{Instant, Duration};
-use std::sync::mpsc;
-use std::thread;
 
 use crate::tetris::render_engine::RenderEngine;
 use crate::tetris::{GameAction, InputEvent, Tetris};
 
-use sdl2::audio;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use crate::tetris::render_engine::sdl::SDL2RenderEngine;
