@@ -26,7 +26,7 @@ pub fn init(audio_subsystem: &AudioSubsystem) -> AudioDevice<Synthesizer> {
                 //     volume: 1.,
                 //     interval_length: 1000,
                 // }}),
-                track: tetris_songs::SONG_4.to_vec(),
+                track: tetris_songs::SONG_3.to_vec(),
             }
     }).unwrap();
 
@@ -70,7 +70,7 @@ impl AudioCallback for Synthesizer {
             *x = 0.;
             for note in &self.track {
                 if note.start_time <= self.tracker && note.end_time >= self.tracker {
-                    *x += note.sample(&self.tracker)/4.;
+                    *x += note.sample(&self.tracker) / 4.;
                 }
             }
 
