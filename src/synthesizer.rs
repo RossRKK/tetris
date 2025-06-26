@@ -74,6 +74,10 @@ impl AudioCallback for Synthesizer {
                 }
             }
 
+            //loop forever
+            if self.tracker > self.track.last().unwrap().end_time {
+                self.tracker = 0;
+            }
         }
     }
 }

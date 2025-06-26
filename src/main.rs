@@ -41,6 +41,7 @@ fn run_with_sdl() {
     audio_device.pause();
 }
 
+//TODO: multiple simultaneous key presses don't seem to work
 fn game_loop(mut tetris: Tetris, mut render_engine: impl RenderEngine, mut event_pump: sdl2::EventPump) {
     let mut loop_start = Instant::now();
     let frame_time = Duration::from_secs_f64(1.0 / 60.0);
