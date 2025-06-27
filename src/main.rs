@@ -12,14 +12,7 @@ use sdl2::keyboard::Keycode;
 use crate::tetris::render_engine::sdl::SDL2RenderEngine;
 
 
-
 fn main() {
-    run_with_sdl();
-}
-
-
-
-fn run_with_sdl() {
     let sdl_context = sdl2::init().unwrap();
 
     let render_engine = SDL2RenderEngine::new(&sdl_context);
@@ -50,7 +43,7 @@ fn game_loop(mut tetris: Tetris, mut render_engine: impl RenderEngine, mut event
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit { .. } => {
-                    return;
+                    tetris.recieve_event(InputEvent::Quit);
                 }
                 Event::KeyDown { keycode: Some(keycode), .. } => {
                     match keycode {

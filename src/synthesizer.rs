@@ -14,7 +14,7 @@ pub fn init(audio_subsystem: &AudioSubsystem) -> AudioDevice<Synthesizer> {
         samples: None       // default sample size
     };
 
-    let device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
+    let device = audio_subsystem.open_playback(None, &desired_spec, |_| {
             // initialize the audio callback
             Synthesizer {
                 tracker: 0,
@@ -45,7 +45,6 @@ impl Note {
     fn sample(&self, tracker: &SampleCounter) -> f32 {
         // get an index within a single wave cycle
         let local_tracker: SampleCounter = (*tracker) % self.interval_length;
-
         if local_tracker > self.interval_length/2 {
             self.volume
         } else {
@@ -66,12 +65,14 @@ impl AudioCallback for Synthesizer {
         for x in out.iter_mut() {
             self.tracker += 1;
             *x = 0.;
+            //TODO this could definetly be more efficient since the notes are in order
+            //but they can overlap (have multiple voices?)
             for note in &self.track {
                 if note.start_time <= self.tracker && note.end_time >= self.tracker {
                     *x += note.sample(&self.tracker) / 4.;
                 }
             }
-
+            
             //loop forever
             if self.tracker > self.track.last().unwrap().end_time {
                 self.tracker = 0;

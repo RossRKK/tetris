@@ -98,10 +98,6 @@ impl TetrominoType {
     }
 }
 
-pub enum RotationDirection {
-    Clockwise,
-    AntiClockwise,
-}
 
 #[derive(Debug)]
 #[derive(Clone)]
@@ -120,15 +116,8 @@ impl Tetromino {
         Self::new(TetrominoType::random())
     }
 
-    pub fn rotate(&mut self, dir: RotationDirection) {
-        match dir {
-            RotationDirection::Clockwise => {
-                self.rotation = (self.rotation + 1) % self.tetromino_type.get_num_rotations();
-            },
-            RotationDirection::AntiClockwise => {
-                self.rotation = (self.rotation + self.tetromino_type.get_num_rotations() - 1) % self.tetromino_type.get_num_rotations();
-            } 
-        }
+    pub fn rotate(&mut self) {
+        self.rotation = (self.rotation + 1) % self.tetromino_type.get_num_rotations();
     }
 
     pub fn get_positions(&self) -> &TetrominoRotation {

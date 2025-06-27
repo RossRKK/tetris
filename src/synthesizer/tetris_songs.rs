@@ -1,6 +1,6 @@
 use crate::synthesizer::Note;
 
-pub const SONG_3: &[Note] = &[
+pub const SONG_3: [Note; 490] = [
     Note { start_time: 0, end_time: 14700, volume: 0.866, interval_length: 66 },
     Note { start_time: 17640, end_time: 26276, volume: 0.866, interval_length: 89 },
     Note { start_time: 26460, end_time: 35096, volume: 0.866, interval_length: 84 },

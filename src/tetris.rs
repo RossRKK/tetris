@@ -93,9 +93,6 @@ impl Tetris {
             InputEvent::TakeAction(action) => {
                 self.action_queue.push(action);
             },
-            _ => {
-                println!("Unrecognised event");
-            }
         }
     }
 
@@ -107,7 +104,7 @@ impl Tetris {
         let tetronimo_backup = self.current_tetromino.clone();
         match action {
             GameAction::Rotate => {
-                self.current_tetromino.rotate(tetromino::RotationDirection::Clockwise);
+                self.current_tetromino.rotate();
             },
             GameAction::MoveDown => {
                 let (x, y) = self.current_tetromino.position;
