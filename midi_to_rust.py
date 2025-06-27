@@ -50,7 +50,7 @@ def midi_to_rust_notes(midi_file):
 def write_rust_file(notes, output_file="tetris_songs.rs", song_name="SONG_3"):
     with open(output_file, "w") as f:
         f.write("use crate::synthesizer::Note;\n\n")
-        f.write(f"pub const {song_name}: &[Note] = &[\n")
+        f.write(f"pub const {song_name}: [Note; {len(notes)}] = [\n")
         for note in notes:
             f.write(f"    Note {{ start_time: {note['start_time']}, end_time: {note['end_time']}, volume: {note['volume']:.3f}, interval_length: {note['interval_length']} }},\n")
         f.write("];\n")
