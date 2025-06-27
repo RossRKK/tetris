@@ -1,5 +1,5 @@
-use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
 use sdl2::AudioSubsystem;
+use sdl2::audio::{AudioCallback, AudioDevice, AudioSpecDesired};
 
 const SAMPLE_RATE: i32 = 44100;
 
@@ -10,23 +10,25 @@ type SampleCounter = usize;
 pub fn init(audio_subsystem: &AudioSubsystem) -> AudioDevice<Synthesizer> {
     let desired_spec = AudioSpecDesired {
         freq: Some(SAMPLE_RATE),
-        channels: Some(1),  // mono
-        samples: None       // default sample size
+        channels: Some(1), // mono
+        samples: None,     // default sample size
     };
 
-    let device = audio_subsystem.open_playback(None, &desired_spec, |_| {
+    let device = audio_subsystem
+        .open_playback(None, &desired_spec, |_| {
             // initialize the audio callback
             Synthesizer {
                 tracker: 0,
                 // track: vec!({ Note {
-                //     start_time : (SAMPLE_RATE as SampleCounter), 
+                //     start_time : (SAMPLE_RATE as SampleCounter),
                 //     end_time: (SAMPLE_RATE as SampleCounter) * 5,
                 //     volume: 1.,
                 //     interval_length: 1000,
                 // }}),
                 track: tetris_songs::SONG_3.to_vec(),
             }
-    }).unwrap();
+        })
+        .unwrap();
 
     device.resume();
 
@@ -45,7 +47,7 @@ impl Note {
     fn sample(&self, tracker: &SampleCounter) -> f32 {
         // get an index within a single wave cycle
         let local_tracker: SampleCounter = (*tracker) % self.interval_length;
-        if local_tracker > self.interval_length/2 {
+        if local_tracker > self.interval_length / 2 {
             self.volume
         } else {
             -self.volume
@@ -72,7 +74,7 @@ impl AudioCallback for Synthesizer {
                     *x += note.sample(&self.tracker) / 4.;
                 }
             }
-            
+
             //loop forever
             if self.tracker > self.track.last().unwrap().end_time {
                 self.tracker = 0;

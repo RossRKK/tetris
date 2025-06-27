@@ -6,19 +6,16 @@ pub type PositionIndex = i32;
 
 pub type Position = (PositionIndex, PositionIndex);
 
-
 // array representing a Tetromino in a specific orientiation
 pub type TetrominoRotation = [(PositionIndex, PositionIndex); TETROMINO_SIZE];
 
 // Square piece (O) - only 1 rotation needed
-const SQUARE_PIECE_POSITIONS: [TetrominoRotation; 1] = [
-    [(0, 0), (0, 1), (1, 0), (1, 1)]
-];
+const SQUARE_PIECE_POSITIONS: [TetrominoRotation; 1] = [[(0, 0), (0, 1), (1, 0), (1, 1)]];
 
 // Line piece (I) - 2 rotations needed
 const LINE_PIECE_POSITIONS: [TetrominoRotation; 2] = [
     [(0, -1), (0, 0), (0, 1), (0, 2)], // Vertical
-    [(-1, 0), (0, 0), (1, 0), (2, 0)]  // Horizontal
+    [(-1, 0), (0, 0), (1, 0), (2, 0)], // Horizontal
 ];
 
 // T piece - 4 rotations needed
@@ -26,7 +23,7 @@ const T_PIECE_POSITIONS: [TetrominoRotation; 4] = [
     [(-1, 0), (0, 0), (1, 0), (0, 1)],  // T upright
     [(0, -1), (0, 0), (0, 1), (1, 0)],  // T right
     [(-1, 0), (0, 0), (1, 0), (0, -1)], // T upside down
-    [(0, -1), (0, 0), (0, 1), (-1, 0)]  // T left
+    [(0, -1), (0, 0), (0, 1), (-1, 0)], // T left
 ];
 
 // L piece - 4 rotations needed
@@ -34,7 +31,7 @@ const L_PIECE_POSITIONS: [TetrominoRotation; 4] = [
     [(0, -1), (0, 0), (0, 1), (1, 1)],   // L upright
     [(-1, 0), (0, 0), (1, 0), (-1, 1)],  // L right
     [(0, -1), (0, 0), (0, 1), (-1, -1)], // L upside down
-    [(-1, 0), (0, 0), (1, 0), (1, -1)]   // L left
+    [(-1, 0), (0, 0), (1, 0), (1, -1)],  // L left
 ];
 
 // J piece (reverse L) - 4 rotations needed
@@ -42,23 +39,22 @@ const J_PIECE_POSITIONS: [TetrominoRotation; 4] = [
     [(0, -1), (0, 0), (0, 1), (-1, 1)],  // J upright
     [(-1, 0), (0, 0), (1, 0), (-1, -1)], // J right
     [(0, -1), (0, 0), (0, 1), (1, -1)],  // J upside down
-    [(-1, 0), (0, 0), (1, 0), (1, 1)]    // J left
+    [(-1, 0), (0, 0), (1, 0), (1, 1)],   // J left
 ];
 
 // S piece - 2 rotations needed
 const S_PIECE_POSITIONS: [TetrominoRotation; 2] = [
     [(1, 0), (0, 0), (0, 1), (-1, 1)],   // S horizontal
-    [(-1, -1), (-1, 0), (0, 0), (0, 1)]    // S vertical
+    [(-1, -1), (-1, 0), (0, 0), (0, 1)], // S vertical
 ];
 
 // Z piece - 2 rotations needed
 const Z_PIECE_POSITIONS: [TetrominoRotation; 2] = [
     [(-1, 0), (0, 0), (0, 1), (1, 1)],   // Z horizontal
-    [(0, -1), (0, 0), (-1, 0), (-1, 1)]    // Z vertical
+    [(0, -1), (0, 0), (-1, 0), (-1, 1)], // Z vertical
 ];
 
-#[derive(Clone, Copy)]
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum TetrominoType {
     Square,
     Line,
@@ -86,7 +82,7 @@ impl TetrominoType {
         TetrominoType::Square,
         TetrominoType::Line,
         TetrominoType::T,
-        TetrominoType::L, 
+        TetrominoType::L,
         TetrominoType::J,
         TetrominoType::S,
         TetrominoType::Z,
@@ -98,9 +94,7 @@ impl TetrominoType {
     }
 }
 
-
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Tetromino {
     pub tetromino_type: TetrominoType,
     rotation: usize,
@@ -109,7 +103,11 @@ pub struct Tetromino {
 
 impl Tetromino {
     pub fn new(tetromino_type: TetrominoType) -> Self {
-        Self { tetromino_type, rotation: 0, position: (5, 20) }
+        Self {
+            tetromino_type,
+            rotation: 0,
+            position: (5, 20),
+        }
     }
 
     pub fn random() -> Self {
